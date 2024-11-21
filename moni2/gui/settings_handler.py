@@ -50,24 +50,26 @@ class SettingsHandler(QObject, SettingsReader, SettingsWriter):
 
     settings_changed = pyqtSignal()
 
-    KEY_COLUMNS = 'columns'
-    KEY_HIDE_DEFAULT_PUBLISHERS = 'hide_default_publishers'
-    KEY_HIDE_PARAMETER_TOPIC = 'hide_parameter_services'
-    KEY_HIDE_MONI2_LOGS = 'hide_moni2_logs'
-    KEY_HIDE_UNMONITORED_NODES = 'hide_unmonitored_nodes'
-    KEY_DEFAULT_LOG_LEVEL = 'default_log_level'
+    KEY_COLUMNS = "columns"
+    KEY_HIDE_DEFAULT_PUBLISHERS = "hide_default_publishers"
+    KEY_HIDE_PARAMETER_TOPIC = "hide_parameter_services"
+    KEY_HIDE_MONI2_LOGS = "hide_moni2_logs"
+    KEY_HIDE_UNMONITORED_NODES = "hide_unmonitored_nodes"
+    KEY_DEFAULT_LOG_LEVEL = "default_log_level"
 
-    def __init__(self,
-                 log: logging.Logger,
-                 organization: str,
-                 app_name: str,
-                 parent: Optional[QObject] = None) -> None:
+    def __init__(
+        self,
+        log: logging.Logger,
+        organization: str,
+        app_name: str,
+        parent: Optional[QObject] = None,
+    ) -> None:
         super().__init__(parent)
         self.log = log
         self.settings = QSettings(organization, app_name)
 
     def columns(self) -> int:
-        return self.settings.value(self.KEY_COLUMNS, 2, int)
+        return self.settings.value(self.KEY_COLUMNS, 3, int)
 
     def set_columns(self, columns: int):
         self.settings.setValue(self.KEY_COLUMNS, columns)
