@@ -1,0 +1,97 @@
+{
+    "organization": "dti.dk",
+    "app_name": "Moni2",
+    "version": "0.1.0",
+    "node_names": [
+        {
+            "name": "nao_lola_client",
+            "namespace": "/",
+            "full_name": "/nao_lola_client"
+        },
+        {
+            "name": "supervisor",
+            "namespace": "/",
+            "full_name": "/supervisor"
+        },
+        {
+            "name": "gt_world_model_publisher",
+            "namespace": "/",
+            "full_name": "/gt_world_model_publisher"
+        },
+        {
+            "name": "sim_camera_container",
+            "namespace": "/",
+            "full_name": "/sim_camera_container"
+        },
+        {
+            "name": "upper_camera",
+            "namespace": "/",
+            "full_name": "/upper_camera"
+        },
+        {
+            "name": "lower_camera",
+            "namespace": "/",
+            "full_name": "/lower_camera"
+        },
+        {
+            "name": "udp_communicator",
+            "namespace": "/",
+            "full_name": "/udp_communicator"
+        },
+        {
+            "name": "proprioception_node",
+            "namespace": "/",
+            "full_name": "/proprioception_node"
+        },
+        {
+            "name": "motion_node",
+            "namespace": "/",
+            "full_name": "/motion_node"
+        },
+        {
+            "name": "head_engine",
+            "namespace": "/",
+            "full_name": "/head_engine"
+        },
+        {
+            "name": "arm_motion_engine",
+            "namespace": "/",
+            "full_name": "/arm_motion_engine"
+        },
+        {
+            "name": "special_action_generator",
+            "namespace": "/",
+            "full_name": "/special_action_generator"
+        },
+        {
+            "name": "walk_engine",
+            "namespace": "/",
+            "full_name": "/walk_engine"
+        },
+        {
+            "name": "kick_engine",
+            "namespace": "/",
+            "full_name": "/kick_engine"
+        },
+        {
+            "name": "ego_status_provider",
+            "namespace": "/",
+            "full_name": "/ego_status_provider"
+        },
+        {
+            "name": "game_status_provider",
+            "namespace": "/",
+            "full_name": "/game_status_provider"
+        },
+        {
+            "name": "led_handler",
+            "namespace": "/",
+            "full_name": "/led_handler"
+        },
+        {
+            "name": "world_model",
+            "namespace": "/",
+            "full_name": "/world_model"
+        }
+    ]
+}

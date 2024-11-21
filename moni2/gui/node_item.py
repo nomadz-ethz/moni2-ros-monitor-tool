@@ -8,7 +8,8 @@ from PyQt5.QtWidgets import (
     QFrame,
     QTreeWidget,
     QTreeWidgetItem,
-    QTreeWidgetItemIterator
+    QTreeWidgetItemIterator,
+    QPushButton,
 )
 from PyQt5.QtCore import Qt, pyqtSlot
 from PyQt5.QtGui import QFont
@@ -28,16 +29,23 @@ class HLine(QFrame):
 
 class NodeItem(QWidget):
 
-    DEFAULT_PUBLISHERS = ['/rosout', '/parameter_events']
-    DEFAULT_SERVICES = ['/describe_parameters', '/get_parameter_types',
-                        '/get_parameters', '/list_parameters',
-                        '/set_parameters', '/set_parameters_atomically']
+    DEFAULT_PUBLISHERS = ["/rosout", "/parameter_events"]
+    DEFAULT_SERVICES = [
+        "/describe_parameters",
+        "/get_parameter_types",
+        "/get_parameters",
+        "/list_parameters",
+        "/set_parameters",
+        "/set_parameters_atomically",
+    ]
 
-    def __init__(self,
-                 node_name: NodeName,
-                 log: logging.Logger,
-                 settings: SettingsReader,
-                 parent: Optional[QWidget] = None):
+    def __init__(
+        self,
+        node_name: NodeName,
+        log: logging.Logger,
+        settings: SettingsReader,
+        parent: Optional[QWidget] = None,
+    ):
         super().__init__(parent)
         self.log = log
         self.settings = settings
@@ -49,6 +57,10 @@ class NodeItem(QWidget):
         self.node_name_label = QLabel(node_name.full_name)
         self.n_errors = QLabel("🛑0")
         self.n_warnings = QLabel("⚠0")
+        self.toggle_button = QPushButton("▶")
+        self.is_collapsed = True
+
+        self.content_frame = QWidget()
         self.topics: QTreeWidget = None
         self.params: QTreeWidget = None
 
@@ -58,10 +70,16 @@ class NodeItem(QWidget):
     def init_ui(self):
         self.log.info("Initializing UI...")
         font = QFont("ubuntu", 15, QFont.Bold)
-        for label in [self.status, self.node_name_label, self.n_errors, self.n_warnings]:
+        for label in [
+            self.status,
+            self.node_name_label,
+            self.n_errors,
+            self.n_warnings,
+        ]:
             label.setFont(font)
 
         status_layout = QHBoxLayout()
+        status_layout.addWidget(self.toggle_button)
         status_layout.addWidget(self.status)
         status_layout.addWidget(self.node_name_label)
         status_layout.addStretch(1)
@@ -69,6 +87,10 @@ class NodeItem(QWidget):
         status_layout.addWidget(self.n_warnings)
         self.n_errors.setStyleSheet("color: #a64452")
         self.n_warnings.setStyleSheet("color: #FFBF00")
+
+        self.toggle_button.setFixedWidth(30)
+        self.toggle_button.setStyleSheet("text-align: left;")
+        self.toggle_button.clicked.connect(self.toggle_collapse)
 
         self.topics = QTreeWidget()
         self.topics.setHeaderLabel("Topics")
@@ -79,17 +101,31 @@ class NodeItem(QWidget):
         self.params.setHeaderLabel("Parameters")
         self.params.setHeaderItem(QTreeWidgetItem(["name", "type", "value"]))
 
+        content_layout = QVBoxLayout(self.content_frame)
+        content_layout.addWidget(HLine())
+        content_layout.addWidget(self.topics)
+        content_layout.addWidget(self.params)
+        self.content_frame.setLayout(content_layout)
+
         main_layout = QVBoxLayout(self)
         main_layout.addLayout(status_layout)
-        main_layout.addWidget(HLine())
-        main_layout.addWidget(self.topics)
-        main_layout.addWidget(self.params)
+        main_layout.addWidget(self.content_frame)
 
         self.setLayout(main_layout)
         self.setObjectName("NodeItem")
         self.setAttribute(Qt.WA_StyledBackground, True)
         self.setStyleSheet("background-color: #dddddd; border-radius: 15px;")
         self.adjustSize()
+
+        self.content_frame.setVisible(not self.is_collapsed)
+
+    @pyqtSlot()
+    def toggle_collapse(self):
+        """Toggle the visibility of the content frame."""
+        self.is_collapsed = not self.is_collapsed
+        self.content_frame.setVisible(not self.is_collapsed)
+        self.toggle_button.setText("▼" if not self.is_collapsed else "▶")
+        self.resize_lists(None)
 
     @pyqtSlot(NodeInfo)
     def update_node(self, node: NodeInfo):
@@ -112,7 +148,7 @@ class NodeItem(QWidget):
             param_item = QTreeWidgetItem(self.params)
             param_item.setText(0, param.name)
             param_item.setText(1, param.type)
-            param_item.setText(2, f'{param.value}')
+            param_item.setText(2, f"{param.value}")
         for i in range(3):
             self.params.resizeColumnToContents(i)
 
@@ -122,10 +158,16 @@ class NodeItem(QWidget):
         parent = QTreeWidgetItem(self.topics)
         parent.setText(0, title)
         for topic in topics:
-            if self.settings.hide_default_publishers() and topic.name in self.DEFAULT_PUBLISHERS:
+            if (
+                self.settings.hide_default_publishers()
+                and topic.name in self.DEFAULT_PUBLISHERS
+            ):
                 continue
-            if self.settings.hide_parameter_services() and \
-                    topic.name.replace(self.node_name.full_name, '') in self.DEFAULT_SERVICES:
+            if (
+                self.settings.hide_parameter_services()
+                and topic.name.replace(self.node_name.full_name, "")
+                in self.DEFAULT_SERVICES
+            ):
                 continue
             child = QTreeWidgetItem(parent)
             child.setText(0, topic.name)
@@ -147,11 +189,16 @@ class NodeItem(QWidget):
             self.topics.clear()
 
     def resize_lists(self, _):
-        topic_count = self.count_items(self.topics)
-        self.topics.setMinimumHeight(18 * topic_count)
-        param_count = self.count_items(self.params)
-        self.params.setMinimumHeight(18 * param_count)
-        self.setMinimumHeight(self.topics.minimumHeight() + self.params.minimumHeight() + 100)
+        if not self.is_collapsed:
+            topic_count = self.count_items(self.topics)
+            self.topics.setMinimumHeight(18 * topic_count)
+            param_count = self.count_items(self.params)
+            self.params.setMinimumHeight(18 * param_count)
+            self.setMinimumHeight(
+                self.topics.minimumHeight() + self.params.minimumHeight() + 100
+            )
+        else:
+            self.setMinimumHeight(50)
 
     @staticmethod
     def count_items(tree: QTreeWidget):
